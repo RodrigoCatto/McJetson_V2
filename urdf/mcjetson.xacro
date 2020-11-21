@@ -30,6 +30,21 @@
   <xacro:property name="wheel_travel" value="0.084"/>
   <xacro:property name="shock_z_offset" value="0.0655"/>
 
+  <xacro:property name="servo_stall_torque" value="0.5649"/>
+  <xacro:property name="servo_no_load_speed" value="4.553"/>
+
+  <xacro:property name="axle_eff_limit" value="5.12766"/>
+  <xacro:property name="axle_vel_limit" value="244.8696"/>
+
+  <xacro:property name="wheelbase" value="0.335"/>
+  <xacro:property name="hex_hub_dist" value="0.365"/>
+  <xacro:property name="axle_length" value="0.03"/>
+  <xacro:property name="wheel_travel" value="0.084"/>
+  <xacro:property name="shock_z_offset" value="0.0655"/>
+
+  <xacro:property name="shock_eff_limit" value="12.5106"/>
+  <xacro:property name="shock_vel_limit" value="1000"/>
+
 
   <!-- Materials -->
   <material name="chassis_mat">
@@ -40,12 +55,41 @@
   </material>
 
   <!-- Macros -->
+
+
+  <!-- Shock absorber -->
+  <xacro:macro name="shock"
+               params="lr_prefix fr_prefix lr_reflect fr_reflect child">
+    <joint name="${lr_prefix}_${fr_prefix}_shock" type="prismatic">
+      <parent link="chassis"/>
+      <child link="${child}"/>
+
+      <origin xyz="${fr_reflect * wheelbase / 2}
+                   ${lr_reflect * ((hex_hub_dist / 2) - axle_length)}
+                   ${(wheel_travel / 2) - shock_z_offset}"/>
+      <axis xyz="0 0 -1"/>
+      <limit lower="${-wheel_travel / 2}" upper="${wheel_travel / 2}"
+             effort="${shock_eff_limit}" velocity="${shock_vel_limit}"/>
+    </joint>
+    <transmission name="${lr_prefix}_${fr_prefix}_shock_trans">
+      <type>transmission_interface/SimpleTransmission</type>
+      <joint name="${lr_prefix}_${fr_prefix}_shock">
+        <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      </joint>
+      <actuator name="${lr_prefix}_${fr_prefix}_shock_act">
+        <!-- This hardwareInterface element exists for compatibility
+             with ROS Hydro. -->
+        <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+        <mechanicalReduction>1</mechanicalReduction>
+      </actuator>
+    </transmission>
+  </xacro:macro>
+
+
   <!-- The "wheel" macro defines an axle carrier, axle, and wheel. -->
   <xacro:macro name="wheel" params="lr_prefix fr_prefix lr_reflect">
-    <link name="${lr_prefix}_${fr_prefix}_axle_carrier">
-      <xacro:null_inertial/>
+    <link name="${lr_prefix}_${fr_prefix}_axle_carrier" >
     </link>
-
     <!-- The left and right axles have the same axis so that identical
          rotation values cause the wheels to rotate in the same direction. -->
     <joint name="${lr_prefix}_${fr_prefix}_axle" type="continuous">
@@ -96,12 +140,15 @@
     </gazebo>
   </xacro:macro>
 
+
+
   <!-- Front wheel -->
   <xacro:macro name="front_wheel"
                params="lr_prefix fr_prefix lr_reflect fr_reflect">
+    <link name="${lr_prefix}_steering_link">
+    </link>
 
     <link name="${lr_prefix}_steering_link">
-      <xacro:null_inertial/>
     </link>
 
     <joint name="${lr_prefix}_steering_joint" type="revolute">
@@ -128,6 +175,16 @@
                  lr_reflect="${lr_reflect}"/>
   </xacro:macro>
 
+
+  <!-- Rear wheel -->
+  <xacro:macro name="rear_wheel"
+               params="lr_prefix fr_prefix lr_reflect fr_reflect">
+    <xacro:shock lr_prefix="${lr_prefix}" fr_prefix="${fr_prefix}"
+                 lr_reflect="${lr_reflect}" fr_reflect="${fr_reflect}"
+                 child="${lr_prefix}_${fr_prefix}_axle_carrier"/>
+    <xacro:wheel lr_prefix="${lr_prefix}" fr_prefix="${fr_prefix}"
+                 lr_reflect="${lr_reflect}"/>
+  </xacro:macro>
 
 
 
@@ -182,6 +239,8 @@
                     lr_reflect="1" fr_reflect="-1"/>
   <xacro:rear_wheel lr_prefix="right" fr_prefix="rear"
                     lr_reflect="-1" fr_reflect="-1"/>
+
+
 
   <gazebo>
     <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so"/>
