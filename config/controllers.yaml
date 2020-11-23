@@ -1,0 +1,14 @@
+ROBOT:
+  controller:
+    state:
+      type: joint_state_controller/JointStateController
+      publish_rate: 50
+    position:
+      rear_wheel_joint:
+        type: effort_controllers/JointPositionController
+        joint: rear_wheel_joint
+        pid: {p: 1.0, i: 1.0, d: 1.0}
+      front_steer_joint:
+        type: effort_controllers/JointPositionController
+        joint: front_steer_joint
+        pid: {p: 1.0, i: 1.0, d: 1.0}

@@ -1,0 +1,6 @@
+ROBOT:
+  hardware_interface:
+     loop_hz: 10 # hz
+     joints:
+       - rear_wheel_joint
+       - front_steer_joint
