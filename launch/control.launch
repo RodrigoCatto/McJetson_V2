@@ -1,6 +1,6 @@
 <launch>
 <!-- Load joint controller configurations from YAML file to parameter server -->
-  <rosparam file="$(find mcjetson_2)/config/controller.yaml" command="load" />
+  <rosparam file="$(find mcjetson_v2)/config/controller.yaml" command="load" />
 
   <!-- load the controllers -->
   <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen" args="ackermann_steering_controller joint_state_controller"/>

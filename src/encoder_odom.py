@@ -50,7 +50,7 @@ while not rospy.is_shutdown():
     
     vx = vel_rpm * convert_rpm_ms
     vy = 0
-    servo_angle_rad = radians(54.5*servo_value-27.25) #rad
+    servo_angle_rad = radians(54.0*servo_value-27.25) #rad 53.7
     #print(-54.5*servo_value+27.25)
     vth = vx * tan(servo_angle_rad) / wheelbase_ #rad/s
 
